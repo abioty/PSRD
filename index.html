@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSRDC Score Calculator - Preterm Infant Social Risk Assessment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #7AC5CD;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #7AC5CD;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+            padding-bottom: 0;
+        }
+        
+        .calculator-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .calculator-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .calculator-section h2 {
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #7AC5CD;
+        }
+        
+        .unsupervised h2 {
+            border-color: #5AA5AD;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .form-group select:focus {
+            outline: none;
+            border-color: #7AC5CD;
+            box-shadow: 0 0 0 3px rgba(122, 197, 205, 0.2);
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: #7AC5CD;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+        
+        .calculate-btn:hover {
+            background: #6AB5BD;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .score-display {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+            color: #7AC5CD;
+        }
+        
+        .score-range {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .score-range h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .range-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 10px;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .example-section {
+            margin-top: 50px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .example-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .example-inputs {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .example-results {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #7AC5CD;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .print-btn {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            float: right;
+            margin-top: 20px;
+        }
+        
+        .print-btn:hover {
+            background: #5a6268;
+        }
+        
+        .footer {
+            background: #7AC5CD;
+            color: white;
+            padding: 30px 40px;
+            margin-top: 50px;
+        }
+        
+        .footer h3 {
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .footer-section {
+            line-height: 1.2;
+        }
+        
+        .footer-section h4 {
+            margin-bottom: 10px;
+            color: white;
+            opacity: 0.95;
+        }
+        
+        .footer-section p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .footer-section a:hover {
+            border-bottom-color: white;
+        }
+        
+        .footer-bottom {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            opacity: 0.9;
+            line-height: 1.3;
+        }
+        
+        .footer-bottom p {
+            margin: 0;
+        }
+        
+        .footer-bottom p:last-child {
+            margin-top: 10px;
+        }
+        
+        .citation-section {
+            background: #f8f9fa;
+            padding: 25px 40px;
+            margin: 0;
+            border-radius: 0 0 20px 20px;
+            border-top: 3px solid #7AC5CD;
+        }
+        
+        .citation-section h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .citation-section p {
+            color: #555;
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+        
+        .citation-section p.disclaimer {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-wrapper,
+            .results-grid,
+            .example-grid,
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .print-btn {
+                display: none;
+            }
+        }
+        
+        .interpretation-note {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .interpretation-note h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .interpretation-note p {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PSRDC Score Calculator</h1>
+            <p>Perinatal Social Risk Determinant Composite Score for Preterm Infants</p>
+            <p style="font-size: 1.1em; margin-top: 15px; font-weight: 600;">Cincinnati Children's Hospital Medical Center</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">For infants born ≤32 weeks gestational age</p>
+        </div>
+        
+        <div class="content">
+            <div class="info-box">
+                <strong>Purpose:</strong> This calculator generates composite scores that quantify the cumulative social risk burden for preterm infants based on five key social determinants of health (SDOH). 
+                The scores represent weighted combinations of maternal age, education, household income, employment status, and family structure. 
+                These weights were derived from their associations with neurodevelopmental outcomes at 2 years corrected age.
+            </div>
+            
+            <div class="warning-box">
+                <strong>Important Note:</strong> These composite scores quantify social risk factors but are not sufficient on their own to predict individual developmental outcomes. 
+                The models have not been externally validated. Clinical decisions should incorporate comprehensive assessment including medical factors, clinical judgment, and individual patient circumstances.
+            </div>
+            
+            <div class="calculator-wrapper">
+                <!-- Unsupervised Model (Left) -->
+                <div class="calculator-section unsupervised">
+                    <h2>PAM Clustering Model (Unsupervised)</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Captures general patterns of social disadvantage independent of specific outcomes</p>
+                    
+                    <form id="unsupervised-form">
+                        <div class="form-group">
+                            <label>Maternal Age at Delivery</label>
+                            <select name="age" required>
+                                <option value="">Select...</option>
+                                <option value="0">Over 25 years (Reference)</option>
+                                <option value="-0.655">25 years or younger</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Maternal Education</label>
+                            <select name="education" required>
+                                <option value="">Select...</option>
+                                <option value="0">Graduate degree (Reference)</option>
+                                <option value="-0.095">College degree/Some college</option>
+                                <option value="-0.889">High school or less</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Household Income</label>
+                            <select name="income" required>
+                                <option value="">Select...</option>
+                                <option value="0">High income (≥400% FPL) (Reference)</option>
+                                <option value="0.551">Middle income (125-400% FPL)</option>
+                                <option value="-0.861">Low income (≤125% FPL)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Employment Status</label>
+                            <select name="employment" required>
+                                <option value="">Select...</option>
+                                <option value="0">Employed (Reference)</option>
+                                <option value="-0.048">Stay-at-home caregiver</option>
+                                <option value="-0.016">Student</option>
+                                <option value="-0.651">Unemployed</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Family Structure</label>
+                            <select name="family" required>
+                                <option value="">Select...</option>
+                                <option value="0">Married (Reference)</option>
+                                <option value="-0.063">Cohabiting/Living with partner</option>
+                                <option value="-0.840">Single/Divorced/Separated</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Supervised Model (Right) -->
+                <div class="calculator-section supervised">
+                    <h2>Lasso Model (Supervised)</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Weights optimized for association with Bayley-III scores at 2 years</p>
+                    
+                    <form id="supervised-form">
+                        <div class="form-group">
+                            <label>Maternal Age at Delivery</label>
+                            <select name="age" required>
+                                <option value="">Select...</option>
+                                <option value="0">Over 25 years (Reference)</option>
+                                <option value="-2.063">25 years or younger</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Maternal Education</label>
+                            <select name="education" required>
+                                <option value="">Select...</option>
+                                <option value="0">Graduate degree (Reference)</option>
+                                <option value="-3.875">College degree/Some college</option>
+                                <option value="-5.729">High school or less</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Household Income</label>
+                            <select name="income" required>
+                                <option value="">Select...</option>
+                                <option value="0">High income (≥400% FPL) (Reference)</option>
+                                <option value="0">Middle income (125-400% FPL)</option>
+                                <option value="-7.291">Low income (≤125% FPL)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Employment Status</label>
+                            <select name="employment" required>
+                                <option value="">Select...</option>
+                                <option value="0">Employed (Reference)</option>
+                                <option value="-4.683">Stay-at-home caregiver</option>
+                                <option value="4.732">Student</option>
+                                <option value="-2.009">Unemployed</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Family Structure</label>
+                            <select name="family" required>
+                                <option value="">Select...</option>
+                                <option value="0">Married (Reference)</option>
+                                <option value="-2.139">Cohabiting/Living with partner</option>
+                                <option value="-0.145">Single/Divorced/Separated</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <button class="calculate-btn" onclick="calculateScores()">Calculate PSRDC Scores</button>
+            
+            <!-- Results Section -->
+            <div id="results" class="results-section">
+                <h2 style="text-align: center; margin-bottom: 30px;">PSRDC Composite Scores</h2>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <h3>PAM Clustering Score (Unsupervised)</h3>
+                        <div id="unsup-score" class="score-display"></div>
+                        
+                        <div class="score-range">
+                            <h4>Score Range Information</h4>
+                            <div class="range-info">
+                                <span>Minimum (highest risk):</span>
+                                <strong>-3.11</strong>
+                            </div>
+                            <div class="range-info">
+                                <span>Maximum (lowest risk):</span>
+                                <strong>0.55</strong>
+                            </div>
+                            <div class="range-info">
+                                <span>This child percentile:</span>
+                                <strong id="unsup-percentile"></strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <h3>Lasso Score (Supervised)</h3>
+                        <div id="sup-score" class="score-display" style="color: #5AA5AD;"></div>
+                        
+                        <div class="score-range">
+                            <h4>Score Range Information</h4>
+                            <div class="range-info">
+                                <span>Minimum (highest risk):</span>
+                                <strong>-19.77</strong>
+                            </div>
+                            <div class="range-info">
+                                <span>Maximum (lowest risk):</span>
+                                <strong>4.73</strong>
+                            </div>
+                            <div class="range-info">
+                                <span>This child percentile:</span>
+                                <strong id="sup-percentile"></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="interpretation-note">
+                    <h4>Score Interpretation</h4>
+                    <p>
+                        <strong>Higher scores indicate lower social risk</strong> (more protective factors), while lower scores indicate higher social risk (more risk factors). 
+                        The scores quantify the cumulative burden of social disadvantage but should be interpreted alongside medical and clinical factors.
+                    </p>
+                    <p style="margin-top: 15px;">
+                        In our development cohort, lower composite scores were associated with increased likelihood of neurodevelopmental impairment (NDI) at 2 years. 
+                        However, these associations require external validation before use in clinical prediction. 
+                        The scores are most appropriately used for research purposes, risk stratification in populations, and identifying infants who may benefit from enhanced surveillance.
+                    </p>
+                </div>
+                
+                <button class="print-btn" onclick="window.print()">Print Report</button>
+            </div>
+            
+            <!-- Example Section -->
+            <div class="example-section">
+                <h2>Example Calculation</h2>
+                
+                <div class="example-grid">
+                    <div class="example-inputs">
+                        <h4 style="margin-bottom: 15px;">Patient Profile:</h4>
+                        <p><strong>Maternal Age:</strong> 22 years</p>
+                        <p><strong>Education:</strong> High school diploma</p>
+                        <p><strong>Income:</strong> Below poverty line (80% FPL)</p>
+                        <p><strong>Employment:</strong> Unemployed</p>
+                        <p><strong>Family Structure:</strong> Single mother</p>
+                        <p style="margin-top: 15px;"><em>Infant born at 28 weeks GA</em></p>
+                    </div>
+                    
+                    <div class="example-results">
+                        <h4 style="margin-bottom: 15px;">Calculated Scores:</h4>
+                        <p><strong>PAM Clustering Score:</strong> -3.11 (minimum possible score)</p>
+                        <p><strong>Lasso Score:</strong> -16.59</p>
+                        <p style="margin-top: 15px;">These scores indicate high cumulative social risk based on the five SDOH factors assessed.</p>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <strong>Interpretation:</strong>
+                            <p style="margin-top: 10px;">This infant has multiple social risk factors that, in our cohort, were associated with increased risk for neurodevelopmental challenges. 
+                            Consider comprehensive assessment including medical factors and family resources to determine appropriate support services.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer with Developer Information -->
+            <div class="footer">
+                <h3>About the PSRDC Score Calculator</h3>
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h4>Developed By</h4>
+                        <p><strong>Neurodevelopmental Disorders Prevention Center</strong></p>
+                        <p>Perinatal Institute</p>
+                        <p>Cincinnati Children's Hospital Medical Center</p>
+                        <p>Cincinnati, OH, USA</p>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h4>Contact Information</h4>
+                        <p><strong>Nehal A. Parikh, DO, MS</strong></p>
+                        <p>Perinatal Institute, Cincinnati Children's Hospital Medical Center</p>
+                        <p>3333 Burnet Ave., MLC 7009, Cincinnati, OH 45229, USA</p>
+                        <p>Email: <a href="mailto:nehal.parikh@cchmc.org">nehal.parikh@cchmc.org</a></p>
+                        <p>Phone: 513.636.7584 | Fax: 513.803.0969</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Citation Section -->
+            <div class="citation-section">
+                <h4>Citation</h4>
+                <p><strong>Derbie AY, Altaye M, Folger AT, Parikh NA.</strong> Development of perinatal social determinants of health composite score in infants born preterm. 
+                Neurodevelopmental Disorders Prevention Center, Cincinnati Children's Hospital Medical Center, 2025.</p>
+                <p class="disclaimer">© 2025 Cincinnati Children's Hospital Medical Center. This tool calculates composite social risk scores for research purposes. 
+                External validation is needed before clinical application. Results should be interpreted with comprehensive clinical assessment.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function calculateScores() {
+            // Get form values
+            const unsupForm = document.getElementById('unsupervised-form');
+            const supForm = document.getElementById('supervised-form');
+            
+            // Validate forms
+            if (!unsupForm.checkValidity() || !supForm.checkValidity()) {
+                alert('Please complete all fields before calculating.');
+                return;
+            }
+            
+            // Calculate unsupervised score
+            let unsupScore = 0;
+            const unsupInputs = unsupForm.querySelectorAll('select');
+            unsupInputs.forEach(input => {
+                unsupScore += parseFloat(input.value);
+            });
+            
+            // Calculate supervised score
+            let supScore = 0;
+            const supInputs = supForm.querySelectorAll('select');
+            supInputs.forEach(input => {
+                supScore += parseFloat(input.value);
+            });
+            
+            // Calculate percentiles (approximate based on distribution)
+            // PAM score range: -3.11 to 0.55
+            const unsupPercentile = Math.round(((unsupScore + 3.11) / 3.66) * 100);
+            
+            // Lasso score range: -19.77 to 4.73
+            const supPercentile = Math.round(((supScore + 19.77) / 24.5) * 100);
+            
+            // Display results
+            document.getElementById('unsup-score').textContent = unsupScore.toFixed(2);
+            document.getElementById('unsup-percentile').textContent = unsupPercentile + 'th percentile';
+            
+            document.getElementById('sup-score').textContent = supScore.toFixed(2);
+            document.getElementById('sup-percentile').textContent = supPercentile + 'th percentile';
+            
+            // Show results section
+            document.getElementById('results').style.display = 'block';
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
